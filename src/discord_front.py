@@ -38,7 +38,7 @@ def read_active_vc_id():
         return channel_id
 
 def make_playlist():
-    ls = glob.glob("../playlist/*.mp3")
+    ls = glob.glob("../playlist/*.mp[34]")
     return random.sample(ls,len(ls))
 
 def nextsong(error):
