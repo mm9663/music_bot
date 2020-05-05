@@ -134,7 +134,7 @@ async def on_message(message):
         # this command may occurs bug
         if cmd == '?stop':
             voice.stop()
-        if cmd == '?show':
+        if cmd == '?list':
             dscr = prep_playlist(message,queue=pos+1)
             embed = discord.Embed(title="Playlist",description=dscr)
             await message.channel.send(embed=embed)
