@@ -4,6 +4,8 @@ import random
 import asyncio
 import glob
 import copy
+from display_playlist import show_id3_tags, get_mp3_length
+
 
 client = discord.Client()
 
@@ -48,7 +50,16 @@ def nextsong(error):
         pos = 0
     player = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(playlist[pos]), volume)
     voice.play(player,after=nextsong)
+    #await message.channel.send('**Playing**:notes:`'+show_id3_tags(playlist[pos]) +'`')
     return
+
+def prep_playlist(message,queue=0):
+    global playlist
+    dscr = ""
+    l = len(playlist)
+    for i in range(queue,min(len(playlist)+queue,10+queue)):
+        dscr += '`{}.` '.format(i-queue+1) + show_id3_tags(playlist[i%l]) + " **[" + get_mp3_length(playlist[i%l]) + "]**\n"
+    return dscr
 # init
 token = read_token()
 active_channel_id = read_active_channel_id()
@@ -90,28 +101,55 @@ async def on_message(message):
         if cmd == '?join':
             voice = await client.get_channel(active_vc_id).connect()
         if cmd == '?jaana':
-            voice.disconnect()
+            await voice.disconnect()
         if cmd == '?play':
             #player = discord.FFmpegPCMAudio(playlist[random.randint(0, len(playlist)-1)])
-            pos = 0
-            await message.channel.send(playlist)
-            player = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(playlist[pos]), volume)
-            voice.play(player,after=nextsong)
+            if voice.is_playing():
+                voice.pause()
+            pos = -1
+            #await message.channel.send(playlist)
+            dscr = prep_playlist(message)
+            embed = discord.Embed(title="Playlist",description=dscr)
+            await message.channel.send(embed=embed)
+            nextsong(None)
+            await message.channel.send('**Playing**:notes:`'+show_id3_tags(playlist[pos]) + '`')
         if cmd == '?next':
             if voice.is_playing():
-                voice.stop()
+                voice.pause()
             nextsong(None)
+            await message.channel.send('**Playing**:notes:`'+show_id3_tags(playlist[pos]) + '`')
         if cmd == '?shuffle':
+            if voice.is_playing():
+                voice.pause()
             pos = -1
             playlist = random.sample(playlist,len(playlist))
-            
-            await message.channel.send(playlist)
+            dscr = prep_playlist(message)
+            embed = discord.Embed(title="Playlist",description=dscr)
+            await message.channel.send(embed=embed)
             nextsong(None)
+            await message.channel.send('**Playing**:notes:`'+show_id3_tags(playlist[pos]) + '`')
         if cmd == '?help':
             await message.channel.send("mada naiyo")
+        
+        # this command may occurs bug
         if cmd == '?stop':
             voice.stop()
-    
+        if cmd == '?show':
+            dscr = prep_playlist(message,queue=pos+1)
+            embed = discord.Embed(title="Playlist",description=dscr)
+            await message.channel.send(embed=embed)
+
+        if cmd == '?pause':
+            if voice.is_playing():
+                voice.pause()
+                await message.channel.send('**Paused**:pause_button:')
+        if cmd == '?resume':
+            if voice.is_paused():
+                voice.resume()
+                await message.channel.send('**Resumed**:arrow_forward:')
+        if cmd == '?now':
+            await message.channel.send('**Now Playing**:notes:`'+show_id3_tags(playlist[pos]) + '`')
+
     if len(cmd_list) == 2:
         cmd = cmd_list[0]
         if cmd == '?volume':

@@ -44,10 +44,10 @@ playlistフォルダからプレイリストを作成し、再生します
 ~~~
 曲を止めます
 ~~~?
-volume down/up
+?volume down/up
 ~~~
 ボリュ－ムを0.001下げます/上げます
 ~~~?
-volume ddown/uup
+?volume ddown/uup
 ~~~
 ボリュームを0.01下げます/上げます

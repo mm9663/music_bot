@@ -1,4 +1,5 @@
 /key/token
 /key/channel_id
 /key/voice_id
+/src/__pycache__
 *.mp3
